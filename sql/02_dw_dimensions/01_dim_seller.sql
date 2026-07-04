@@ -1,0 +1,6 @@
+CREATE TABLE DimSeller (
+    SellerKey INT IDENTITY(1,1) PRIMARY KEY,
+    SellerID VARCHAR(50) NOT NULL,
+    City VARCHAR(100),
+    State VARCHAR(50)
+);
