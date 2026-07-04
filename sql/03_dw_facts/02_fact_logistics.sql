@@ -1,4 +1,4 @@
-CREATE TABLE FactLogistics (
+﻿CREATE TABLE FactLogistics (
     FactKey INT IDENTITY(1,1) PRIMARY KEY,
 
     SellerKey INT NOT NULL,
