@@ -14,7 +14,6 @@
 ---
 
 **Course:** Database 2
-**Team:** Yasin Saberi, Abolfazl Lookzadeh, Morteza, Amirhossein
 **Tech Stack:** SQL Server, T-SQL, Windows Task Scheduler, GitHub
 
 ## 📑 Table of Contents
