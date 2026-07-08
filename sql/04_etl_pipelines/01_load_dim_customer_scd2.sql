@@ -22,13 +22,13 @@ BEGIN
 
         -- 2. Perform the MERGE and output the results into the table variable
         MERGE dbo.dim_customer AS target
-        USING Olist_Staging.dbo.stg_customers AS source
-        ON (target.customer_id = source.customer_id)
+        USING (SELECT * FROM DeduplicatedSource WHERE rn = 1) AS source
+        ON (target.customer_unique_id = source.customer_unique_id)
         
         WHEN MATCHED AND target.IsCurrent = 1 AND (
-            target.customer_zip_code_prefix <> source.customer_zip_code_prefix OR
-            target.customer_city <> source.customer_city OR
-            target.customer_state <> source.customer_state
+            ISNULL(target.customer_zip_code_prefix, '') <> ISNULL(source.customer_zip_code_prefix, '') OR
+            ISNULL(target.customer_city, '') <> ISNULL(source.customer_city, '') OR
+            ISNULL(target.customer_state, '') <> ISNULL(source.customer_state, '')
         ) THEN 
             UPDATE SET target.IsCurrent = 0, target.ValidTo = GETDATE()
             

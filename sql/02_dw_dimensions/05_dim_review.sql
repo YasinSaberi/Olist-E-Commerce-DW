@@ -1,8 +1,7 @@
 USE Olist_DW;
 GO
 
-IF OBJECT_ID('dbo.dim_review', 'U') IS NOT NULL
-    DROP TABLE dbo.dim_review;
+IF OBJECT_ID('dbo.dim_review', 'U') IS NOT NULL DROP TABLE dbo.dim_review;
 GO
 
 CREATE TABLE dbo.dim_review (
@@ -13,4 +12,10 @@ CREATE TABLE dbo.dim_review (
     review_title VARCHAR(255) NULL,
     review_message VARCHAR(MAX) NULL
 );
+GO
+
+SET IDENTITY_INSERT dbo.dim_review ON;
+INSERT INTO dbo.dim_review (review_sk, review_id, order_id, review_score, review_title, review_message)
+VALUES (-1, 'UNKNOWN', 'UNKNOWN', 0, 'No Review', 'Customer did not leave a review');
+SET IDENTITY_INSERT dbo.dim_review OFF;
 GO
