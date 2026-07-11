@@ -4,41 +4,23 @@ GO
 CREATE OR ALTER PROCEDURE dbo.sp_load_dim_customer_scd2
 AS
 BEGIN
-    SET NOCOUNT ON; -- Prevents network spam from row counts
+    SET NOCOUNT ON;
+    -- INJECTED LOGGING
+    EXEC dbo.sp_etl_logger 'sp_load_dim_customer_scd2', 'dim_customer', 'Starting SCD2 Incremental Load', 'RUNNING';
 
-    -- 1. Create a table variable to temporarily hold the SCD2 updates in memory
     DECLARE @UpdatedRecords TABLE (
-        action_name NVARCHAR(10),
-        customer_id NVARCHAR(50), 
-        customer_unique_id NVARCHAR(50), 
-        customer_zip_code_prefix VARCHAR(20),   -- FIX: was INT, now matches stg_customers / dim_customer (VARCHAR(20)) so leading zeros in Brazilian CEPs aren't lost
-        customer_city NVARCHAR(50), 
-        customer_state NVARCHAR(50)
+        action_name NVARCHAR(10), customer_id NVARCHAR(50), customer_unique_id NVARCHAR(50), 
+        customer_zip_code_prefix VARCHAR(20), customer_city NVARCHAR(50), customer_state NVARCHAR(50)
     );
 
     BEGIN TRY
-        -- FIX: WITH must directly precede the statement using it, so BEGIN TRAN moves below the CTE
         ;WITH DeduplicatedSource AS (
-            -- FIX: this CTE was referenced but never defined. It dedupes stg_customers
-            -- down to one row per customer_unique_id, since the same real person can
-            -- appear under multiple customer_id values across different orders.
-            SELECT
-                customer_id,
-                customer_unique_id,
-                customer_zip_code_prefix,
-                customer_city,
-                customer_state,
-                ROW_NUMBER() OVER (
-                    PARTITION BY customer_unique_id
-                    ORDER BY LoadDate DESC
-                ) AS rn
+            SELECT customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state,
+                   ROW_NUMBER() OVER (PARTITION BY customer_unique_id ORDER BY LoadDate DESC) AS rn
             FROM Olist_Staging.dbo.stg_customers
         )
-
-        -- Start the transaction. If anything fails after this point, the entire block is undone.
         BEGIN TRAN;
 
-        -- 2. Perform the MERGE and output the results into the table variable
         MERGE dbo.dim_customer AS target
         USING (SELECT * FROM DeduplicatedSource WHERE rn = 1) AS source
         ON (target.customer_unique_id = source.customer_unique_id)
@@ -57,25 +39,21 @@ BEGIN
         OUTPUT $action, source.customer_id, source.customer_unique_id, source.customer_zip_code_prefix, source.customer_city, source.customer_state
         INTO @UpdatedRecords (action_name, customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state);
 
-        -- 3. Safely insert the new active records from memory into the dimension
-        INSERT INTO dbo.dim_customer (
-            customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state, IsCurrent, ValidFrom, ValidTo
-        )
-        SELECT 
-            customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state, 1, GETDATE(), NULL
-        FROM @UpdatedRecords
-        WHERE action_name = 'UPDATE';
+        INSERT INTO dbo.dim_customer (customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state, IsCurrent, ValidFrom, ValidTo)
+        SELECT customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state, 1, GETDATE(), NULL
+        FROM @UpdatedRecords WHERE action_name = 'UPDATE';
 
-        -- If the engine reaches this line, everything worked. Save it permanently.
         COMMIT TRAN;
+        
+        -- INJECTED LOGGING
+        EXEC dbo.sp_etl_logger 'sp_load_dim_customer_scd2', 'dim_customer', 'SCD2 Load Completed Successfully', 'SUCCESS';
 
     END TRY
     BEGIN CATCH
-        -- If any error occurs, destroy the partial transaction to protect the database.
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRAN;
-        
-        -- Throw the error back to SSMS so you can see why it failed.
+        DECLARE @ErrMsg NVARCHAR(MAX) = ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK TRAN;
+        -- INJECTED LOGGING (Post-Rollback)
+        EXEC dbo.sp_etl_logger 'sp_load_dim_customer_scd2', 'dim_customer', @ErrMsg, 'FAILED';
         THROW;
     END CATCH;
 END;
