@@ -11,12 +11,30 @@ BEGIN
         action_name NVARCHAR(10),
         customer_id NVARCHAR(50), 
         customer_unique_id NVARCHAR(50), 
-        customer_zip_code_prefix INT, 
+        customer_zip_code_prefix VARCHAR(20),   -- FIX: was INT, now matches stg_customers / dim_customer (VARCHAR(20)) so leading zeros in Brazilian CEPs aren't lost
         customer_city NVARCHAR(50), 
         customer_state NVARCHAR(50)
     );
 
     BEGIN TRY
+        -- FIX: WITH must directly precede the statement using it, so BEGIN TRAN moves below the CTE
+        ;WITH DeduplicatedSource AS (
+            -- FIX: this CTE was referenced but never defined. It dedupes stg_customers
+            -- down to one row per customer_unique_id, since the same real person can
+            -- appear under multiple customer_id values across different orders.
+            SELECT
+                customer_id,
+                customer_unique_id,
+                customer_zip_code_prefix,
+                customer_city,
+                customer_state,
+                ROW_NUMBER() OVER (
+                    PARTITION BY customer_unique_id
+                    ORDER BY LoadDate DESC
+                ) AS rn
+            FROM Olist_Staging.dbo.stg_customers
+        )
+
         -- Start the transaction. If anything fails after this point, the entire block is undone.
         BEGIN TRAN;
 

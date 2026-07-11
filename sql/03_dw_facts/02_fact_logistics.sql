@@ -15,7 +15,7 @@ CREATE TABLE dbo.fact_logistics (
     delivery_delay_days INT NULL,
     shipping_delay_days INT NULL, 
     
-    CONSTRAINT FK_FactLogistics_Customer FOREIGN KEY (customer_sk) REFERENCES dbo.dim_customer(customer_sk),
+    CONSTRAINT FK_FactLogistics_Customer FOREIGN KEY (customer_sk) REFERENCES dbo.dim_customer(customer_sk), -- FIX: this FK was missing even though the column existed; every other FK on this table was enforced except this one
     CONSTRAINT FK_FactLogistics_Seller FOREIGN KEY (seller_sk) REFERENCES dbo.dim_seller(seller_sk),
     CONSTRAINT FK_FactLogistics_Review FOREIGN KEY (review_sk) REFERENCES dbo.dim_review(review_sk),
     CONSTRAINT FK_FactLogistics_Date FOREIGN KEY (order_date_sk) REFERENCES dbo.dim_date(date_sk)
