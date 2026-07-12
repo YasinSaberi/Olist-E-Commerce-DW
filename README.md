@@ -219,6 +219,5 @@ The entire ETL pipeline is controlled by a single master stored procedure (`sp_m
 <div align="center">
 
 Built as part of a **Database 2** course project.
-**Contributors:** Yasin Saberi
 
 </div>
