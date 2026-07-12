@@ -5,7 +5,6 @@ CREATE OR ALTER PROCEDURE dbo.sp_load_dim_customer_scd2
 AS
 BEGIN
     SET NOCOUNT ON;
-    -- INJECTED LOGGING
     EXEC dbo.sp_etl_logger 'sp_load_dim_customer_scd2', 'dim_customer', 'Starting SCD2 Incremental Load', 'RUNNING';
 
     DECLARE @UpdatedRecords TABLE (
@@ -14,13 +13,13 @@ BEGIN
     );
 
     BEGIN TRY
+        BEGIN TRAN;
+
         ;WITH DeduplicatedSource AS (
             SELECT customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state,
                    ROW_NUMBER() OVER (PARTITION BY customer_unique_id ORDER BY LoadDate DESC) AS rn
             FROM Olist_Staging.dbo.stg_customers
         )
-        BEGIN TRAN;
-
         MERGE dbo.dim_customer AS target
         USING (SELECT * FROM DeduplicatedSource WHERE rn = 1) AS source
         ON (target.customer_unique_id = source.customer_unique_id)
@@ -45,7 +44,6 @@ BEGIN
 
         COMMIT TRAN;
         
-        -- INJECTED LOGGING
         EXEC dbo.sp_etl_logger 'sp_load_dim_customer_scd2', 'dim_customer', 'SCD2 Load Completed Successfully', 'SUCCESS';
 
     END TRY

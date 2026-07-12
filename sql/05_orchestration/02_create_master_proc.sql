@@ -2,20 +2,21 @@ USE Olist_DW;
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_master_etl_load
-    @IsFirstLoad BIT = 0 -- Default is Incremental (0)
+    @IsFirstLoad BIT = 0 
 AS
 BEGIN
     SET NOCOUNT ON;
     EXEC dbo.sp_etl_logger 'sp_master_etl_load', 'DATABASE', 'Starting Master Orchestration', 'RUNNING';
 
     BEGIN TRY
-        -- STEP 1: Always load Dimensions first to establish Foreign Keys
+        EXEC dbo.sp_etl_logger 'sp_master_etl_load', 'DATABASE', 'Extracting Source to Staging', 'INFO';
+        EXEC Olist_Staging.dbo.sp_extract_source_to_staging;
+
         EXEC dbo.sp_load_dim_customer_scd2;
         EXEC dbo.sp_load_dim_product_scd3;
         EXEC dbo.sp_load_dim_seller_scd1;
         EXEC dbo.sp_load_dim_review;
         
-        -- STEP 2: Branch logic based on execution type
         IF @IsFirstLoad = 1
         BEGIN
             EXEC dbo.sp_etl_logger 'sp_master_etl_load', 'DATABASE', 'Executing First Load Path', 'INFO';
