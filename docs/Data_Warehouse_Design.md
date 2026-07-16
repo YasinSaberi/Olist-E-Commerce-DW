@@ -13,7 +13,6 @@
 </style>
 # مستند معماری و طراحی انبار داده (Olist DW Architecture)
 
-**نسخه:** 2.0
 **پروژه:** Olist E-Commerce Data Warehouse
 **پلتفرم:** Microsoft SQL Server
 **الگوی مدل‌سازی:** Dimensional Modeling / Star Schema
