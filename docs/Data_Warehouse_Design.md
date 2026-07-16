@@ -5,15 +5,15 @@
 
 ```mermaid
 graph TD
-    subgraph Operational Environment
+    subgraph Operational_Environment [Operational Environment]
         S[(Olist_Source<br/>Kaggle CSVs)]
     end
     
-    subgraph Staging Area
+    subgraph Staging_Area [Staging Area]
         SA[(Olist_Staging<br/>Landing Zone)]
     end
     
-    subgraph Analytical Environment (DW)
+    subgraph Analytical_Environment [Analytical Environment DW]
         DW[(Olist_DW<br/>Star Schema)]
         DM1[Sales Data Mart<br/>مارت فروش]
         DM2[Logistics Data Mart<br/>مارت لجستیک]
