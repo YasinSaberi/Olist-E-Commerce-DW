@@ -1,3 +1,16 @@
+<style>
+  body {
+    direction: rtl;
+    text-align: right;
+    font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
+  }
+  
+  /* چپ‌چین نگه‌داشتن کدهای برنامه نویسی */
+  pre, code, .mermaid {
+    direction: ltr;
+    text-align: left;
+  }
+</style>
 # مستند معماری و طراحی انبار داده (Olist DW Architecture)
 
 **نسخه:** 2.0
