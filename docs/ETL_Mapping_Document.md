@@ -1,3 +1,15 @@
+<style>
+  body {
+    direction: rtl;
+    text-align: right;
+    font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
+  }
+  
+  pre, code, .mermaid {
+    direction: ltr;
+    text-align: left;
+  }
+</style>
 # مستند نگاشت و انتقال داده‌ها (Olist ETL Mapping)
 
 **نسخه:** 2.0
