@@ -9,7 +9,6 @@ BEGIN
     BEGIN TRY
         BEGIN TRAN;
 
-        -- ۱. پاکسازی جداول استیجینگ
         TRUNCATE TABLE dbo.stg_customers;
         TRUNCATE TABLE dbo.stg_orders;
         TRUNCATE TABLE dbo.stg_order_items;
@@ -18,7 +17,6 @@ BEGIN
         TRUNCATE TABLE dbo.stg_geolocation;
         TRUNCATE TABLE dbo.stg_reviews;
 
-        -- ۲. انتقال داده‌ها
         
         INSERT INTO dbo.stg_customers (customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state)
         SELECT customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state
@@ -36,7 +34,6 @@ BEGIN
         SELECT seller_id, seller_zip_code_prefix, seller_city, seller_state
         FROM Olist_Source.dbo.sellers;
 
-        -- در اینجا مشکل تایپی دیتاست اصلی Kaggle (lenght) هندل شده است
         INSERT INTO dbo.stg_products (product_id, product_category_name, product_name_length, product_description_length, product_photos_qty, product_weight_g, product_length_cm, product_height_cm, product_width_cm)
         SELECT product_id, product_category_name, product_name_lenght, product_description_lenght, product_photos_qty, product_weight_g, product_length_cm, product_height_cm, product_width_cm
         FROM Olist_Source.dbo.products;
