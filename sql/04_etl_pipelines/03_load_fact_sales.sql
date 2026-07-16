@@ -32,7 +32,7 @@ BEGIN
         INNER JOIN dbo.dim_customer c 
             ON o.customer_id = c.customer_id AND c.IsCurrent = 1
         INNER JOIN dbo.dim_product p 
-            ON oi.product_id = p.product_id -- SCD Type 3 does not use IsCurrent
+            ON oi.product_id = p.product_id
         WHERE NOT EXISTS (
             SELECT 1 
             FROM dbo.fact_sales f 
