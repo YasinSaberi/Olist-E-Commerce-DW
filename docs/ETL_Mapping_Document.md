@@ -12,7 +12,6 @@
 </style>
 # مستند نگاشت و انتقال داده‌ها (Olist ETL Mapping)
 
-**نسخه:** 2.0
 **پروژه:** Olist E-Commerce Data Warehouse
 **پلتفرم:** Microsoft SQL Server / T-SQL
 **دامنه‌ی داده:** سفارش‌های ثبت‌شده در بازه‌ی ۲۰۱۶ تا ۲۰۱۸ (دیتاست Kaggle)
