@@ -1,17 +1,40 @@
-# Olist Data Warehouse: Architecture & Design
+# مستند معماری و طراحی انبار داده (Olist DW Architecture)
 
-## 1. System Architecture
-The data warehouse is built using a classic 3-tier architecture implemented entirely within Microsoft SQL Server:
-1. **Olist_Source:** The operational database representing the raw Kaggle dataset.
-2. **Olist_Staging (SA):** The landing zone for untransformed data, ensuring the source system is not locked during complex transformations.
-3. **Olist_DW:** The analytical database utilizing a Star Schema design.
+## ۱. معماری سیستم (System Architecture)
+این انبار داده بر اساس معماری استاندارد ۳ لایه‌ای (3-Tier Architecture) و به طور کامل در محیط Microsoft SQL Server پیاده‌سازی شده است:
 
-## 2. Enterprise Data Bus & Data Marts
-The project serves two distinct business processes (Data Marts) sharing conformed dimensions:
-*   **Sales Data Mart:** Centered around `fact_sales` to analyze revenue, pricing behavior, and customer purchasing patterns across time and geography.
-*   **Logistics Data Mart:** Centered around `fact_logistics` to monitor delivery performance, shipping delays, and freight costs associated with sellers and customer reviews.
+```mermaid
+graph TD
+    subgraph Operational Environment
+        S[(Olist_Source<br/>Kaggle CSVs)]
+    end
+    
+    subgraph Staging Area
+        SA[(Olist_Staging<br/>Landing Zone)]
+    end
+    
+    subgraph Analytical Environment (DW)
+        DW[(Olist_DW<br/>Star Schema)]
+        DM1[Sales Data Mart<br/>مارت فروش]
+        DM2[Logistics Data Mart<br/>مارت لجستیک]
+        DW --> DM1
+        DW --> DM2
+    end
+    
+    S -->|00_extract_proc| SA
+    SA -->|ETL Master Orchestrator| DW
+```
 
-## 3. Star Schema ER Diagram
+۱. **لایه Olist_Source:** دیتابیس عملیاتی که نمایانگر داده‌های خام و توزیع‌شده است.
+۲. **لایه Olist_Staging (SA):** منطقه فرود (Landing Zone) داده‌ها. این لایه تضمین می‌کند که سیستم عملیاتی در طول فرآیندهای سنگین تبدیل داده (Transformation) قفل نشود.
+۳. **لایه Olist_DW:** دیتابیس تحلیلی اصلی که با استفاده از مدل‌سازی ابعادی (Dimensional Modeling) طراحی شده است.
+
+## ۲. دیتا مارت‌ها (Data Marts)
+این پروژه دو فرآیند تجاری مجزا را از طریق دو دیتا مارت که دارای ابعاد مشترک (Conformed Dimensions) هستند، پوشش می‌دهد:
+*   **دیتا مارت فروش (Sales):** متمرکز بر جدول `fact_sales` جهت تحلیل درآمد، رفتار قیمت‌گذاری و الگوهای خرید مشتریان در طول زمان و مکان.
+*   **دیتا مارت لجستیک (Logistics):** متمرکز بر جدول `fact_logistics` جهت نظارت بر عملکرد تحویل، تاخیر در ارسال و هزینه‌های حمل‌ونقل کالا.
+
+## ۳. نمودار موجودیت-رابطه مدل ستاره‌ای (Star Schema ER Diagram)
 
 ```mermaid
 erDiagram
@@ -66,7 +89,7 @@ erDiagram
         int is_weekend
     }
 
-    %% Relationships
+    %% روابط جداول (Relationships)
     dim_customer ||--o{ fact_sales : "analyzed by"
     dim_product ||--o{ fact_sales : "contains"
     dim_date ||--o{ fact_sales : "purchased on"
@@ -74,3 +97,5 @@ erDiagram
     dim_seller ||--o{ fact_logistics : "fulfilled by"
     dim_review ||--o{ fact_logistics : "rated by"
     dim_date ||--o{ fact_logistics : "purchased on"
+```
+*(توجه: برای مشاهده نقشه کامل یکپارچگی ارجاعی، به محدودیت‌های کلید اصلی و کلید خارجی در کدهای SQL مراجعه شود).*
